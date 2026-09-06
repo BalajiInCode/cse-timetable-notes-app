@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#10131a">
+<title>VVCE CSE H — Attendance & Notes</title>
+<style>
+:root{
+  --bg:#0d1016; --card:#151a23; --card2:#1b2230; --text:#f3f5f7; --muted:#8e98a8;
+  --accent:#55d6be; --accent2:#7c6cff; --danger:#ff647c; --warning:#ffc857;
+  --border:#283142; --present:#3ddc97; --absent:#ff5c75;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+.app{max-width:720px;margin:auto;padding:16px 14px 90px}
+header{padding:8px 2px 16px}
+.kicker{font-size:12px;color:var(--accent);font-weight:800;letter-spacing:1.2px;text-transform:uppercase}
+h1{font-size:25px;margin:5px 0 2px}
+.sub{color:var(--muted);font-size:13px}
+.datebar{background:linear-gradient(135deg,#171e2b,#121821);border:1px solid var(--border);border-radius:18px;padding:14px;margin-bottom:14px}
+.date-row{display:flex;align-items:center;gap:10px}
+.date-info{flex:1}
+.day{font-size:21px;font-weight:800}
+.full-date{font-size:13px;color:var(--muted);margin-top:2px}
+input[type=date]{background:#0d121a;color:var(--text);border:1px solid var(--border);border-radius:11px;padding:10px;font-size:14px}
+.banner{border-radius:15px;padding:12px 14px;margin:0 0 14px;border:1px solid #554b23;background:#2a2616;color:#ffe59a}
+.banner strong{display:block;color:var(--warning);margin-bottom:3px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px}
+.tab{border:1px solid var(--border);background:var(--card);color:var(--muted);padding:11px 5px;border-radius:12px;font-weight:750;font-size:13px}
+.tab.active{background:#20283a;color:var(--accent);border-color:#395d62}
+.section{display:none}.section.active{display:block}
+.class-card{background:var(--card);border:1px solid var(--border);border-radius:17px;padding:14px;margin-bottom:11px}
+.class-top{display:flex;gap:10px}
+.time{min-width:76px;color:var(--accent);font-size:12px;font-weight:800;padding-top:2px}
+.class-main{flex:1}
+.subject{font-size:16px;font-weight:800;line-height:1.2}
+.code{font-size:11px;color:var(--muted);margin-top:3px}
+.teacher{font-size:12px;color:#b5bdca;margin-top:3px}
+.att{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}
+.att button{border:1px solid var(--border);background:#10151d;color:var(--muted);padding:11px;border-radius:11px;font-weight:800}
+.att button.present.active{background:rgba(61,220,151,.15);border-color:var(--present);color:var(--present)}
+.att button.absent.active{background:rgba(255,92,117,.13);border-color:var(--absent);color:var(--absent)}
+.note-wrap{margin-top:10px}
+.note-input{width:100%;min-height:52px;resize:vertical;background:#10151d;color:var(--text);border:1px solid var(--border);border-radius:11px;padding:10px;font:inherit;font-size:13px}
+.pending-row{display:flex;align-items:center;gap:8px;margin-top:8px;color:#c2c8d2;font-size:12px}
+.pending-row input,.task input{width:19px;height:19px;accent-color:var(--accent)}
+.empty{background:var(--card);border:1px dashed var(--border);padding:25px;text-align:center;border-radius:15px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:13px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:13px}
+.stat b{font-size:20px}.stat span{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.att-row{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:13px;margin-bottom:9px}
+.att-head{display:flex;justify-content:space-between;gap:10px}
+.att-name{font-weight:800;font-size:14px}
+.pct{font-weight:900}.low .pct{color:var(--danger)}
+.bar{height:7px;background:#0d1219;border-radius:99px;overflow:hidden;margin-top:10px}
+.fill{height:100%;background:var(--present);border-radius:99px}.low .fill{background:var(--danger)}
+.small{font-size:11px;color:var(--muted);margin-top:6px}
+.task{display:flex;gap:11px;align-items:flex-start;background:var(--card);border:1px solid var(--border);padding:13px;border-radius:14px;margin-bottom:9px}
+.task-text{flex:1;font-size:14px}.task-meta{font-size:11px;color:var(--muted);margin-top:4px}
+.footer{position:fixed;bottom:0;left:0;right:0;background:rgba(13,16,22,.94);backdrop-filter:blur(10px);border-top:1px solid var(--border);padding:9px;text-align:center;color:#657082;font-size:10px}
+.no-class{margin-top:5px}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+<div class="kicker">VVCE • CSE Section H</div>
+<h1>Attendance & Notes</h1>
+<div class="sub">First Semester • Odd Sem 2026–27</div>
+</header>
+
+<div id="banner"></div>
+
+<div class="datebar">
+<div class="date-row">
+<div class="date-info">
+<div class="day" id="dayName"></div>
+<div class="full-date" id="fullDate"></div>
+</div>
+<input id="datePicker" type="date">
+</div>
+</div>
+
+<div class="tabs">
+<button class="tab active" data-tab="classes">Classes</button>
+<button class="tab" data-tab="attendance">Attendance</button>
+<button class="tab" data-tab="tasks">Pending</button>
+</div>
+
+<section id="classes" class="section active"></section>
+<section id="attendance" class="section"></section>
+<section id="tasks" class="section"></section>
+</div>
+<div class="footer">✓ Auto-saved on every change • Data stays on this device</div>
+
+<script>
+const timetable={
+Monday:[
+["8:00-9:00","Applied Chemistry","1BCHES102","Prof. Manasa C"],
+["9:00-10:00","Samskruthika Kannada","1BKSKK110","Prof. Ashwini H B"],
+["10:30-12:30","Applied Maths-I Lab","1BMATS101L","Dr. Veeranayaka T N"],
+["1:30-3:30","Programming in C Lab","1BPICSL107","Prof. Dayananda K J"],
+["3:30-4:30","Balake Kannada","1BKBKK110","Prof. Ashwini H B"]
+],
+Tuesday:[
+["8:00-9:00","Programming in C","1BPICS103","Prof. Dayananda K J"],
+["9:00-10:00","Applied Maths-I","1BMATS101","Dr. Veeranayaka T N"],
+["10:30-11:30","Intro to Electronics Engg.","1BIECK105","Dr. Chaitanya D J"],
+["11:30-12:30","Intro to AI & Applications","1BAIAK104","Prof. Kayvashree G"],
+["1:30-2:30","Applied Chemistry","1BCHES102","Prof. Manasa C"]
+],
+Wednesday:[
+["9:00-10:00","Applied Chemistry","1BCHES102","Prof. Manasa C"],
+["10:30-12:30","Communication Skills-I","1BENGK108","Prof. Niranjan Sarja / Nanditha M"],
+["1:30-2:30","Applied Maths-I","1BMATS101","Dr. Veeranayaka T N"],
+["2:30-3:30","Programming in C","1BPICS103","Prof. Dayananda K J"]
+],
+Thursday:[
+["8:00-10:00","Applied Chemistry Lab","1BCHESL106","Dr. Sowmya P T / Manasa C"],
+["10:30-11:30","Intro to Electronics Engg.","1BIECK105","Dr. Chaitanya D J"],
+["11:30-12:30","Applied Maths-I","1BMATS101","Dr. Veeranayaka T N"]
+],
+Friday:[
+["8:00-9:00","Intro to Electronics Engg.","1BIECK105","Dr. Chaitanya D J"],
+["9:00-10:00","Intro to AI & Applications","1BAIAK104","Prof. Kayvashree G"],
+["10:30-12:30","Design Thinking & Tinkering Lab","1BDTTK109","Prof. Manasa M R"]
+]};
+
+const tests=[
+["Test-1","Module 1","2026-09-28","2026-09-29"],
+["Test-2","Module 2 & 3","2026-11-12","2026-11-14"],
+["Test-3","Module 4 & 5","2026-12-21","2026-12-24"]
+];
+
+const KEY="vvce_cse_h_tracker_v1";
+let data=JSON.parse(localStorage.getItem(KEY)||'{"records":{},"tasks":{}}');
+let selected=new Date().toISOString().slice(0,10);
+
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function dateObj(s){return new Date(s+"T12:00:00")}
+function dayName(s){return dateObj(s).toLocaleDateString("en-IN",{weekday:"long"})}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function recKey(date,i){return date+"|"+dayName(date)+"|"+i}
+
+function renderDate(){
+ const d=dateObj(selected);
+ document.getElementById("datePicker").value=selected;
+ document.getElementById("dayName").textContent=dayName(selected);
+ document.getElementById("fullDate").textContent=d.toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"});
+ renderClasses(); renderBanner();
+}
+function renderClasses(){
+ const el=document.getElementById("classes");
+ const list=timetable[dayName(selected)]||[];
+ if(!list.length){el.innerHTML='<div class="empty"><div style="font-size:25px">📚</div><b>No classes scheduled</b><div class="no-class">Enjoy your day or use the date picker to check another day.</div></div>';return}
+ el.innerHTML=list.map((c,i)=>{
+   const k=recKey(selected,i), r=data.records[k]||{};
+   return `<div class="class-card">
+   <div class="class-top"><div class="time">${esc(c[0])}</div><div class="class-main">
+   <div class="subject">${esc(c[1])}</div><div class="code">${esc(c[2])}</div><div class="teacher">${esc(c[3])}</div>
+   </div></div>
+   <div class="att">
+   <button class="present ${r.status==="present"?"active":""}" onclick="setStatus('${esc(k)}','present')">✓ Present</button>
+   <button class="absent ${r.status==="absent"?"active":""}" onclick="setStatus('${esc(k)}','absent')">✕ Absent</button>
+   </div>
+   <div class="note-wrap">
+   <textarea class="note-input" placeholder="What to do after this class?" oninput="setNote('${esc(k)}',this.value)">${esc(r.note||"")}</textarea>
+   <label class="pending-row"><input type="checkbox" ${r.pending?"checked":""} onchange="setPending('${esc(k)}',this.checked)"> Mark note as pending task</label>
+   </div></div>`
+ }).join("");
+}
+function setStatus(k,status){
+ data.records[k]=data.records[k]||{};data.records[k].status=status;save();renderClasses();renderAttendance();
+}
+function setNote(k,note){
+ data.records[k]=data.records[k]||{};data.records[k].note=note;
+ if(!note.trim())data.records[k].pending=false;
+ save();renderTasks();
+}
+function setPending(k,v){
+ data.records[k]=data.records[k]||{};data.records[k].pending=v;save();renderClasses();renderTasks();
+}
+function renderAttendance(){
+ const el=document.getElementById("attendance"), map={};
+ Object.values(timetable).flat().forEach(c=>{map[c[2]]={name:c[1],present:0,absent:0}});
+ Object.entries(data.records).forEach(([k,r])=>{
+   if(!r.status)return;
+   const parts=k.split("|"); const day=parts[1], idx=Number(parts[2]);
+   const c=(timetable[day]||[])[idx];
+   if(!c)return;
+   const code=c[2];
+   if(!map[code])map[code]={name:c[1],present:0,absent:0};
+   map[code][r.status]++;
+ });
+ let totalP=0,totalA=0;
+ Object.values(map).forEach(x=>{totalP+=x.present;totalA+=x.absent});
+ const total=totalP+totalA, overall=total?Math.round(totalP/total*100):0;
+ el.innerHTML=`<div class="stats"><div class="stat"><b>${overall}%</b><span>Overall attendance</span></div><div class="stat"><b>${totalP}/${total}</b><span>Present / marked classes</span></div></div>`+
+ Object.entries(map).map(([code,x])=>{
+   const n=x.present+x.absent,p=n?Math.round(x.present/n*100):0,low=n&&p<75;
+   return `<div class="att-row ${low?"low":""}"><div class="att-head"><div><div class="att-name">${esc(x.name)}</div><div class="small">${esc(code)}</div></div><div class="pct">${p}%</div></div><div class="bar"><div class="fill" style="width:${p}%"></div></div><div class="small">${x.present} present • ${x.absent} absent${!n?" • No attendance marked yet":""}</div></div>`
+ }).join("");
+}
+function renderTasks(){
+ const el=document.getElementById("tasks"), arr=[];
+ Object.entries(data.records).forEach(([k,r])=>{
+   if(!r.pending || !r.note || !r.note.trim())return;
+   const [date,day,idx]=k.split("|"), c=(timetable[day]||[])[Number(idx)];
+   if(c)arr.push({k,date,c,note:r.note});
+ });
+ if(!arr.length){el.innerHTML='<div class="empty"><div style="font-size:25px">🎯</div><b>No pending tasks</b><div class="no-class">Notes marked as pending will appear here.</div></div>';return}
+ el.innerHTML=arr.sort((a,b)=>a.date.localeCompare(b.date)).map(x=>`
+ <div class="task"><input type="checkbox" onchange="completeTask('${esc(x.k)}',this.checked)">
+ <div class="task-text">${esc(x.note)}<div class="task-meta">${dateObj(x.date).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})} • ${esc(x.c[1])} • ${esc(x.c[0])}</div></div></div>`).join("");
+}
+function completeTask(k,v){if(v){data.records[k].pending=false;save();renderTasks();renderClasses()}}
+function renderBanner(){
+ const b=document.getElementById("banner");
+ const today=new Date();today.setHours(12,0,0,0);
+ const s=dateObj(selected); let html="";
+ tests.forEach(t=>{
+   const start=dateObj(t[2]),end=dateObj(t[3]);const nearStart=new Date(start);nearStart.setDate(start.getDate()-7);
+   if(s>=nearStart&&s<=end){
+     const during=s>=start&&s<=end;
+     html+=`<div class="banner"><strong>📌 ${t[0]} — ${t[1]}</strong>${during?"Test window is active today.":"Test window is within 7 days."} (${dateObj(t[2]).toLocaleDateString("en-IN",{day:"numeric",month:"short"})}–${dateObj(t[3]).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})})</div>`;
+   }
+ });
+ b.innerHTML=html;
+}
+document.getElementById("datePicker").addEventListener("change",e=>{selected=e.target.value;renderDate()});
+document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>{
+ document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+ document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
+ btn.classList.add("active");document.getElementById(btn.dataset.tab).classList.add("active");
+ if(btn.dataset.tab==="attendance")renderAttendance();if(btn.dataset.tab==="tasks")renderTasks();
+}));
+renderDate();renderAttendance();renderTasks();
+</script>
+</body>
+</html>
