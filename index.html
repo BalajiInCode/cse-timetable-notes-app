@@ -82,49 +82,53 @@ input[type=date]{background:#0d121a;color:var(--text);border:1px solid var(--bor
 </div>
 </div>
 
-<div class="tabs">
+<div class="tabs" style="grid-template-columns:repeat(4,1fr)">
 <button class="tab active" data-tab="classes">Classes</button>
 <button class="tab" data-tab="attendance">Attendance</button>
 <button class="tab" data-tab="tasks">Pending</button>
+<button class="tab" data-tab="timetable">Timetable</button>
 </div>
 
 <section id="classes" class="section active"></section>
 <section id="attendance" class="section"></section>
 <section id="tasks" class="section"></section>
+<section id="timetable" class="section"></section>
 </div>
 <div class="footer">✓ Auto-saved on every change • Data stays on this device</div>
 
 <script>
 const timetable={
 Monday:[
-["8:00-9:00","Applied Chemistry","1BCHES102","Prof. Manasa C"],
-["9:00-10:00","Samskruthika Kannada","1BKSKK110","Prof. Ashwini H B"],
-["10:30-12:30","Applied Maths-I Lab","1BMATS101L","Dr. Veeranayaka T N"],
-["1:30-3:30","Programming in C Lab","1BPICSL107","Prof. Dayananda K J"],
-["3:30-4:30","Balake Kannada","1BKBKK110","Prof. Ashwini H B"]
+["8:00-9:00","Applied Chemistry","1BCHES102","Prof. Manasa C","M-117"],
+["9:00-10:00","Samskruthika Kannada","1BKSKK110","Prof. Ashwini H B","M-117"],
+["10:30-12:30","Applied Maths-I Lab","1BMATS101L","Dr. Veeranayaka T N","A-212"],
+["1:30-3:30","Programming in C Lab","1BPICSL107","Prof. Dayananda K J","A-212"],
+["3:30-4:30","Balake Kannada","1BKBKK110","Prof. Ashwini H B","M-115"]
 ],
 Tuesday:[
-["8:00-9:00","Programming in C","1BPICS103","Prof. Dayananda K J"],
-["9:00-10:00","Applied Maths-I","1BMATS101","Dr. Veeranayaka T N"],
-["10:30-11:30","Intro to Electronics Engg.","1BIECK105","Dr. Chaitanya D J"],
-["11:30-12:30","Intro to AI & Applications","1BAIAK104","Prof. Kayvashree G"],
-["1:30-2:30","Applied Chemistry","1BCHES102","Prof. Manasa C"]
+["8:00-9:00","Programming in C","1BPICS103","Prof. Dayananda K J","M-117"],
+["9:00-10:00","Applied Maths-I","1BMATS101","Dr. Veeranayaka T N","M-117"],
+["10:30-11:30","Intro to Electronics Engg.","1BIECK105","Dr. Chaitanya D J","M-117"],
+["11:30-12:30","Intro to AI & Applications","1BAIAK104","Prof. Kayvashree G","M-117"],
+["1:30-2:30","Applied Chemistry","1BCHES102","Prof. Manasa C","M-117"]
 ],
 Wednesday:[
-["9:00-10:00","Applied Chemistry","1BCHES102","Prof. Manasa C"],
-["10:30-12:30","Communication Skills-I","1BENGK108","Prof. Niranjan Sarja / Nanditha M"],
-["1:30-2:30","Applied Maths-I","1BMATS101","Dr. Veeranayaka T N"],
-["2:30-3:30","Programming in C","1BPICS103","Prof. Dayananda K J"]
+["9:00-10:00","Applied Chemistry","1BCHES102","Prof. Manasa C","M-117"],
+["10:30-12:30","Communication Skills-I","1BENGK108","Prof. Niranjan Sarja / Nanditha M","A-002 / A-004"],
+["1:30-2:30","Applied Maths-I","1BMATS101","Dr. Veeranayaka T N","M-117"],
+["2:30-3:30","Programming in C","1BPICS103","Prof. Dayananda K J","M-117"]
 ],
 Thursday:[
-["8:00-10:00","Applied Chemistry Lab","1BCHESL106","Dr. Sowmya P T / Manasa C"],
-["10:30-11:30","Intro to Electronics Engg.","1BIECK105","Dr. Chaitanya D J"],
-["11:30-12:30","Applied Maths-I","1BMATS101","Dr. Veeranayaka T N"]
+["8:00-10:00","Applied Chemistry Lab","1BCHESL106","Dr. Sowmya P T / Manasa C","G-201 / G-202 / G-003"],
+["10:30-11:30","Intro to Electronics Engg.","1BIECK105","Dr. Chaitanya D J","M-117"],
+["11:30-12:30","Applied Maths-I","1BMATS101","Dr. Veeranayaka T N","M-117"]
 ],
 Friday:[
-["8:00-9:00","Intro to Electronics Engg.","1BIECK105","Dr. Chaitanya D J"],
-["9:00-10:00","Intro to AI & Applications","1BAIAK104","Prof. Kayvashree G"],
-["10:30-12:30","Design Thinking & Tinkering Lab","1BDTTK109","Prof. Manasa M R"]
+["8:00-9:00","Intro to Electronics Engg.","1BIECK105","Dr. Chaitanya D J","M-117"],
+["9:00-10:00","Intro to AI & Applications","1BAIAK104","Prof. Kayvashree G","M-117"],
+["10:30-11:30","Applied Maths-I","1BMATS101","Dr. Veeranayaka T N","M-117"],
+["11:30-12:30","Programming in C","1BPICS103","Prof. Dayananda K J","M-117"],
+["1:30-3:30","Design Thinking & Tinkering Lab","1BDTTK109","Prof. Manasa M R","M-402"]
 ]};
 
 const tests=[
@@ -158,7 +162,7 @@ function renderClasses(){
    const k=recKey(selected,i), r=data.records[k]||{};
    return `<div class="class-card">
    <div class="class-top"><div class="time">${esc(c[0])}</div><div class="class-main">
-   <div class="subject">${esc(c[1])}</div><div class="code">${esc(c[2])}</div><div class="teacher">${esc(c[3])}</div>
+   <div class="subject">${esc(c[1])}</div><div class="code">${esc(c[2])}</div><div class="teacher">${esc(c[3])} · ${esc(c[4]||"")}</div>
    </div></div>
    <div class="att">
    <button class="present ${r.status==="present"?"active":""}" onclick="setStatus('${esc(k)}','present')">✓ Present</button>
@@ -200,6 +204,37 @@ function renderAttendance(){
  Object.entries(map).map(([code,x])=>{
    const n=x.present+x.absent,p=n?Math.round(x.present/n*100):0,low=n&&p<75;
    return `<div class="att-row ${low?"low":""}"><div class="att-head"><div><div class="att-name">${esc(x.name)}</div><div class="small">${esc(code)}</div></div><div class="pct">${p}%</div></div><div class="bar"><div class="fill" style="width:${p}%"></div></div><div class="small">${x.present} present • ${x.absent} absent${!n?" • No attendance marked yet":""}</div></div>`
+ }).join("") + renderLedgerTable(map);
+}
+function renderLedgerTable(map){
+ const rows=Object.entries(map).map(([code,x])=>{
+   const n=x.present+x.absent,p=n?Math.round(x.present/n*100):0;
+   let lastNote="No classes logged yet";
+   Object.entries(data.records).forEach(([k,r])=>{
+     const parts=k.split("|"); const c=(timetable[parts[1]]||[])[Number(parts[2])];
+     if(c && c[2]===code && r.note && r.note.trim()) lastNote=r.note;
+   });
+   return `<tr><td><b>${esc(x.name)}</b><div class="small">${esc(code)}</div></td><td>${x.present}/${n}</td><td>${n?p+"%":"—"}</td><td class="small">${esc(lastNote)}</td></tr>`;
+ }).join("");
+ return `<h2 style="font-size:18px;margin:22px 0 10px">Attendance ledger</h2>
+ <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">
+ <thead><tr style="text-align:left;color:var(--muted)"><th style="padding:6px 8px 10px">Subject</th><th style="padding:6px 8px 10px">Present</th><th style="padding:6px 8px 10px">%</th><th style="padding:6px 8px 10px">Note</th></tr></thead>
+ <tbody>${rows}</tbody></table></div>`;
+}
+function renderTimetable(){
+ const el=document.getElementById("timetable");
+ const days=["Monday","Tuesday","Wednesday","Thursday","Friday"];
+ el.innerHTML='<h2 style="font-size:18px;margin:4px 0 12px">Full weekly timetable</h2>'+days.map(day=>{
+   const list=timetable[day]||[];
+   return `<div class="class-card">
+   <div style="display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:15px">${day}<span class="small">${list.length} classes</span></div>
+   ${list.map(c=>`<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+     <div class="time" style="display:inline-block">${esc(c[0])}</div>
+     <div class="subject" style="margin-top:4px">${esc(c[1])}</div>
+     <div class="code">${esc(c[2])}</div>
+     <div class="teacher">${esc(c[3])} · ${esc(c[4]||"")}</div>
+   </div>`).join("")}
+   </div>`;
  }).join("");
 }
 function renderTasks(){
@@ -233,9 +268,9 @@ document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>
  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
  document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
  btn.classList.add("active");document.getElementById(btn.dataset.tab).classList.add("active");
- if(btn.dataset.tab==="attendance")renderAttendance();if(btn.dataset.tab==="tasks")renderTasks();
+ if(btn.dataset.tab==="attendance")renderAttendance();if(btn.dataset.tab==="tasks")renderTasks();if(btn.dataset.tab==="timetable")renderTimetable();
 }));
-renderDate();renderAttendance();renderTasks();
+renderDate();renderAttendance();renderTasks();renderTimetable();
 </script>
 </body>
 </html>
