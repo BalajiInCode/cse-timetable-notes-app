@@ -137,6 +137,38 @@ const tests=[
 ["Test-3","Module 4 & 5","2026-12-21","2026-12-24"]
 ];
 
+const holidays={
+"2026-08-15":"Independence Day",
+"2026-08-26":"Eid Milad",
+"2026-09-12":"Link Holiday",
+"2026-09-14":"Varasiddhi Vinayaka Vrata",
+"2026-10-02":"Gandhi Jayanthi",
+"2026-10-10":"Mahalaya Amavasya",
+"2026-10-19":"Link Holiday",
+"2026-10-20":"Navami / Ayudha Pooja",
+"2026-10-21":"Vijaya Dashami",
+"2026-11-09":"Link Holiday",
+"2026-11-10":"Deepawali",
+"2026-11-27":"Kanakadasa Jayanti",
+"2026-11-28":"Link Holiday",
+"2026-12-25":"Christmas",
+"2027-01-14":"Makara Sankranthi",
+"2027-01-26":"Republic Day"
+};
+
+// Working Saturdays follow another weekday's timetable, per the official calendar
+const saturdayRotation={
+"2026-09-26":"Monday",
+"2026-10-17":"Monday",
+"2026-10-24":"Tuesday",
+"2026-10-31":"Wednesday",
+"2026-11-07":"Monday",
+"2026-11-14":"Tuesday",
+"2026-11-21":"Wednesday",
+"2026-12-12":"Tuesday",
+"2026-12-26":"Friday"
+};
+
 const KEY="vvce_cse_h_tracker_v1";
 let data=JSON.parse(localStorage.getItem(KEY)||'{"records":{},"tasks":{}}');
 let selected=new Date().toISOString().slice(0,10);
@@ -145,7 +177,12 @@ function save(){localStorage.setItem(KEY,JSON.stringify(data))}
 function dateObj(s){return new Date(s+"T12:00:00")}
 function dayName(s){return dateObj(s).toLocaleDateString("en-IN",{weekday:"long"})}
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
-function recKey(date,i){return date+"|"+dayName(date)+"|"+i}
+function recKey(date,i){return date+"|"+effectiveDayName(date)+"|"+i}
+function effectiveDayName(date){
+ const d=dayName(date);
+ if(d==="Saturday" && saturdayRotation[date])return saturdayRotation[date];
+ return d;
+}
 
 function renderDate(){
  const d=dateObj(selected);
@@ -156,9 +193,19 @@ function renderDate(){
 }
 function renderClasses(){
  const el=document.getElementById("classes");
- const list=timetable[dayName(selected)]||[];
- if(!list.length){el.innerHTML='<div class="empty"><div style="font-size:25px">📚</div><b>No classes scheduled</b><div class="no-class">Enjoy your day or use the date picker to check another day.</div></div>';return}
- el.innerHTML=list.map((c,i)=>{
+ if(holidays[selected]){
+   el.innerHTML=`<div class="empty"><div style="font-size:25px">🎉</div><b>Holiday</b><div class="no-class">${esc(holidays[selected])} — no classes today.</div></div>`;
+   return;
+ }
+ let effectiveDay=dayName(selected);
+ let rotationNote="";
+ if(effectiveDay==="Saturday" && saturdayRotation[selected]){
+   effectiveDay=effectiveDayName(selected);
+   rotationNote=`<div class="banner" style="margin-bottom:14px"><strong>📅 Working Saturday</strong>Following ${esc(effectiveDay)}'s timetable today.</div>`;
+ }
+ const list=timetable[effectiveDay]||[];
+ if(!list.length){el.innerHTML=rotationNote+'<div class="empty"><div style="font-size:25px">📚</div><b>No classes scheduled</b><div class="no-class">Enjoy your day or use the date picker to check another day.</div></div>';return}
+ el.innerHTML=rotationNote+list.map((c,i)=>{
    const k=recKey(selected,i), r=data.records[k]||{};
    return `<div class="class-card">
    <div class="class-top"><div class="time">${esc(c[0])}</div><div class="class-main">
